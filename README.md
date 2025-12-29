@@ -1,11 +1,25 @@
-# Accessory CNN — Real-Time Glasses / Hat / No-Accessory Classifier
+# Real-Time Accessory Detection with CNN (PyTorch)
 
-A lightweight PyTorch model that recognises whether a person on camera is wearing **glasses**, a **hat**, or **no accessory**.  
-With 600 real photos per class and ×2 augmentations, it reaches **99.63 % test accuracy** while running live at ~25 FPS on a laptop webcam.
+Real-time **computer vision classification** project that detects whether a person is wearing **glasses**, a **hat**, or **no accessory** from a live webcam stream.  
+The system is implemented using a lightweight **Convolutional Neural Network (CNN)** in PyTorch and achieves **99.6% test accuracy** while running at ~25 FPS on a standard laptop webcam.
 
 ---
 
-## Folder structure
+## Project Overview
+
+This project addresses a real-time image classification problem under practical constraints:  
+limited data, low latency requirements, and robustness to lighting and pose variations.
+
+The goal is to design a **fast, accurate, and simple CNN-based pipeline** capable of live inference without relying on heavy pretrained models.
+
+Key characteristics:
+- End-to-end pipeline: data → training → evaluation → live inference
+- Designed for **real-time performance**
+- Focus on preventing overfitting on a small dataset
+
+---
+
+## Project Structure
 MidProject/   
 │ ├── data/ ← train / val / test image folders (git-ignored)    
 │ │ ├── train/   
@@ -21,38 +35,57 @@ MidProject/
 
 ---
 
-## Key choices
-
-| Component        | Setting / Rationale |
-|------------------|---------------------|
-| **Input size**   | 128 × 128 RGB — small enough for real-time, large enough to see accessories |
-| **Dataset**      | 600 raw photos × 3 classes → 70 / 15 / 15 split → **train** set tripled via augmentation (1 260 images) |
-| **Augmentations**| Random crop, flip, colour-jitter; generated *after* the split to avoid leakage |
-| **Model**        | 3-block CNN with **Dropout 0.5** (“slow-and-steady” regularisation) |
-| **Optimiser**    | Adam (lr = 5 × 10⁻⁴) |
-| **Epochs**       | 8 — enough to converge, no over-fitting |
-| **Metrics**      | Val Acc = 0.9926 • **Test Acc = 0.9963** |
-
-> **Slow and steady** = training just long enough to converge, with dropout and moderate augmentations, rather than aggressive LR tricks.
+*All logic is contained in a single notebook for clarity and reproducibility.*
 
 ---
 
+## Dataset & Preprocessing
+
+- **Classes**: glasses / hat / no accessory
+- **Raw data**: ~600 real images per class
+- **Split**: 70% train / 15% validation / 15% test
+- **Augmentation** (applied **after** the split to avoid data leakage):
+  - Random crop
+  - Horizontal flip
+  - Color jitter
+- **Training set size after augmentation**: ~1,260 images
+
+---
+
+## Model & Training
+
+| Component | Details |
+|---------|---------|
+| Input size | 128 × 128 RGB |
+| Architecture | 3 × (Conv → ReLU → MaxPool) + Fully Connected |
+| Regularization | Dropout (0.3) |
+| Optimizer | Adam (LR = 5e-4) |
+| Epochs | 8 |
+| Training strategy | “Slow and steady” — short training to convergence |
+
+The model is intentionally kept small to ensure **low latency and stable real-time inference**.
+
+---
 
 ## Results
 
-| Split       | Accuracy | Loss |
-|-------------|---------:|-----:|
-| Validation  | 0.9926   | 0.3438 |
-| **Test**    | **0.9963** | 0.3100 |
+| Split | Accuracy | Loss |
+|------|----------|------|
+| Validation | 99.26% | 0.3438 |
+| Test | **99.63%** | 0.31 |
+
+The final model generalizes well despite the small dataset, with clear separation between training, validation, and test sets.
 
 ---
 
-
-## Quick start
+## Running the Project
 
 ```bash
-git clone https://github.com/YehonatanRavoach/AccessoryCNN-Project.git
-cd AccessoryCNN-Project
-python -m venv .venv && .\\.venv\\Scripts\\activate      # Windows venv
+git clone https://github.com/YehonatanRavoach/realtime-accessory-detection-cnn.git
+cd realtime-accessory-detection-cnn
+
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+
 pip install -r requirements.txt
-jupyter notebook AccessoryCNN.ipynb                      # run everything
+jupyter notebook AccessoryCNN.ipynb
